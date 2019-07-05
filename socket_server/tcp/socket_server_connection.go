@@ -15,11 +15,11 @@ type ConnCallback interface {
 }
 
 type Connection struct {
-	c          *gotcp.Conn
-	RecvBuffer *bytes.Buffer
-	exit       chan struct{}
-	status     uint8
-	conf       *Conf
+	c           *gotcp.Conn
+	recv_buffer *bytes.Buffer
+	exit        chan struct{}
+	status      uint8
+	conf        *Conf
 
 	pipe_aw     *os.File // current audio
 	pipe_vw     *os.File // current video
@@ -37,10 +37,10 @@ func NewConnection(c *gotcp.Conn, conf *Conf) *Connection {
 	tcp_c := c.GetRawConn()
 	tcp_c.SetReadDeadline(time.Now().Add(time.Duration(3) * time.Minute))
 	return &Connection{
-		conf:       conf,
-		c:          c,
-		RecvBuffer: bytes.NewBuffer([]byte{}),
-		exit:       make(chan struct{}),
+		conf:        conf,
+		c:           c,
+		recv_buffer: bytes.NewBuffer([]byte{}),
+		exit:        make(chan struct{}),
 	}
 }
 
@@ -50,7 +50,7 @@ func (c *Connection) SetReadDeadline(minutes int) {
 
 func (c *Connection) Close() {
 	close(c.exit)
-	c.RecvBuffer.Reset()
+	c.recv_buffer.Reset()
 	if c.pipe_aw != nil {
 		c.pipe_aw.Close()
 	}

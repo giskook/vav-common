@@ -45,11 +45,11 @@ func (ss *SocketServer) OnClose(c *gotcp.Conn) {
 
 func (ss *SocketServer) OnMessage(c *gotcp.Conn, p gotcp.Packet) bool {
 	connection := c.GetExtraData().(*Connection)
-	connection.RecvBuffer.Write(p.Serialize())
+	connection.recv_buffer.Write(p.Serialize())
 	for {
-		protocol_id, protocol_length := protocol.CheckProtocol(connection.RecvBuffer)
+		protocol_id, protocol_length := protocol.CheckProtocol(connection.recv_buffer)
 		buf := make([]byte, protocol_length)
-		connection.RecvBuffer.Read(buf)
+		connection.recv_buffer.Read(buf)
 		switch protocol_id {
 		case protocol.PROTOCOL_HALF_PACK:
 			return true
