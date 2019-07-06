@@ -107,3 +107,18 @@ func TestVehicleStreamFormat(t *testing.T) {
 	}
 	t.Log(audio_format, vedio_format)
 }
+
+func TestGetVavmsInfo(t *testing.T) {
+	init_redis()
+
+	vavms_info, err := GetInstance().GetVavmsInfo("13731143001", "13731143001_2", "vavms2", "stream_media")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(vavms_info)
+	vavms_info, err = GetInstance().GetVavmsInfo("13731143001", "13731143001_2", "vavms1", "stream_media")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(vavms_info)
+}
