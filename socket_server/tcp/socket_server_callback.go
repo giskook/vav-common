@@ -43,10 +43,10 @@ func (ss *SocketServer) OnClose(c *gotcp.Conn) {
 	//debug.PrintStack()
 }
 
-func (ss *SocketServer) prepare(c *Connection, id string) bool {
+func (ss *SocketServer) prepare(c *Connection, id, channel string) bool {
 	ok := true
 	c.once_prepare.Do(func() {
-		ok = c.func_prepare(id)
+		ok = c.func_prepare(id, channel)
 	})
 
 	return ok
@@ -66,7 +66,7 @@ func (ss *SocketServer) OnMessage(c *gotcp.Conn, p gotcp.Packet) bool {
 			return true
 		case protocol.PROTOCOL_RTP:
 			rtp := protocol.Parse(buf)
-			prepare := ss.prepare(connection, rtp.SIM)
+			prepare := ss.prepare(connection, rtp.SIM, rtp.LogicalChannel)
 			if !prepare {
 				return false
 			}

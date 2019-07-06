@@ -23,8 +23,8 @@ func (s *myserver) OnClose(conn *Connection) bool {
 	return true
 }
 
-func (s *myserver) Prepare(sim string) bool {
-	log.Println("TestPrepare")
+func (s *myserver) Prepare(sim, channel string) bool {
+	log.Println("TestPrepare", sim, channel)
 	return true
 }
 
