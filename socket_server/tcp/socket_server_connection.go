@@ -5,6 +5,7 @@ import (
 	"github.com/gansidui/gotcp"
 	"github.com/giskook/vav-common/base"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -14,12 +15,16 @@ type ConnCallback interface {
 	OnClose(*Connection) bool
 }
 
+type PrepareFunc func(string) bool
+
 type Connection struct {
 	c           *gotcp.Conn
 	recv_buffer *bytes.Buffer
 	exit        chan struct{}
 	status      uint8
 	conf        *Conf
+
+	id string // format servertype.sim.logicalchan
 
 	pipe_aw     *os.File // current audio
 	pipe_vw     *os.File // current video
@@ -30,17 +35,19 @@ type Connection struct {
 	frame_audio base.Frame
 	frame_vedio base.Frame
 
-	id string // format servertype.sim.logicalchan
+	once_prepare sync.Once
+	func_prepare PrepareFunc
 }
 
-func NewConnection(c *gotcp.Conn, conf *Conf) *Connection {
+func NewConnection(c *gotcp.Conn, conf *Conf, prepare_func PrepareFunc) *Connection {
 	tcp_c := c.GetRawConn()
-	tcp_c.SetReadDeadline(time.Now().Add(time.Duration(3) * time.Minute))
+	tcp_c.SetReadDeadline(time.Now().Add(conf.DefautReadLimit))
 	return &Connection{
-		conf:        conf,
-		c:           c,
-		recv_buffer: bytes.NewBuffer([]byte{}),
-		exit:        make(chan struct{}),
+		conf:         conf,
+		c:            c,
+		func_prepare: prepare_func,
+		recv_buffer:  bytes.NewBuffer([]byte{}),
+		exit:         make(chan struct{}),
 	}
 }
 

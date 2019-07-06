@@ -3,6 +3,7 @@ package socket_server
 import (
 	"log"
 	"testing"
+	"time"
 )
 
 type myserver struct {
@@ -22,16 +23,20 @@ func (s *myserver) OnClose(conn *Connection) bool {
 	return true
 }
 
+func (s *myserver) Prepare(sim string) bool {
+	log.Println("TestPrepare")
+	return true
+}
+
 func TestNewSocketServer(t *testing.T) {
 	my := &myserver{}
 	conf := &Conf{
-		TcpAddr:    ":8876",
-		FifoDir:    "/tmp/",
-		FFmpegBin:  "/tmp/",
-		ServerType: SERVER_TYPE_VAVMS,
+		TcpAddr:         ":8876",
+		ServerType:      SERVER_TYPE_VAVMS,
+		DefautReadLimit: time.Duration(1) * time.Minute,
 	}
 
-	my.server = NewSocketServer(conf, my)
+	my.server = NewSocketServer(conf, my, my.Prepare)
 	my.server.Start()
 	for {
 	}

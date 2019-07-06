@@ -22,7 +22,7 @@ const (
 )
 
 func (ss *SocketServer) OnConnect(c *gotcp.Conn) bool {
-	connection := NewConnection(c, ss.conf)
+	connection := NewConnection(c, ss.conf, ss.func_prepare)
 	c.PutExtraData(connection)
 	log.Printf("<CNT> %v \n", c.GetRawConn())
 
@@ -43,6 +43,15 @@ func (ss *SocketServer) OnClose(c *gotcp.Conn) {
 	//debug.PrintStack()
 }
 
+func (ss *SocketServer) prepare(c *Connection, id string) bool {
+	ok := true
+	c.once_prepare.Do(func() {
+		ok = c.func_prepare(id)
+	})
+
+	return ok
+}
+
 func (ss *SocketServer) OnMessage(c *gotcp.Conn, p gotcp.Packet) bool {
 	connection := c.GetExtraData().(*Connection)
 	connection.recv_buffer.Write(p.Serialize())
@@ -57,6 +66,10 @@ func (ss *SocketServer) OnMessage(c *gotcp.Conn, p gotcp.Packet) bool {
 			return true
 		case protocol.PROTOCOL_RTP:
 			rtp := protocol.Parse(buf)
+			prepare := ss.prepare(connection, rtp.SIM)
+			if !prepare {
+				return false
+			}
 			if rtp.Type <= RTP_TYPE_VIDEOB {
 				if rtp.Segment == RTP_SEGMENT_FIRST ||
 					rtp.Segment == RTP_SEGMENT_MID {
