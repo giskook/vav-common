@@ -43,13 +43,13 @@ func (ss *SocketServer) OnClose(c *gotcp.Conn) {
 	//debug.PrintStack()
 }
 
-func (ss *SocketServer) prepare(c *Connection, id, channel string) bool {
-	ok := true
+func (ss *SocketServer) prepare(c *Connection, id, channel string) error {
+	var err error
 	c.once_prepare.Do(func() {
-		ok = c.func_prepare(id, channel)
+		err = c.func_prepare(id, channel)
 	})
 
-	return ok
+	return err
 }
 
 func (ss *SocketServer) OnMessage(c *gotcp.Conn, p gotcp.Packet) bool {
@@ -66,8 +66,9 @@ func (ss *SocketServer) OnMessage(c *gotcp.Conn, p gotcp.Packet) bool {
 			return true
 		case protocol.PROTOCOL_RTP:
 			rtp := protocol.Parse(buf)
-			prepare := ss.prepare(connection, rtp.SIM, rtp.LogicalChannel)
-			if !prepare {
+			err := ss.prepare(connection, rtp.SIM, rtp.LogicalChannel)
+			if err != nil {
+				log.Printf("<INFO> %s %s prepare error %s\n", rtp.SIM, rtp.LogicalChannel, err.Error())
 				return false
 			}
 			if rtp.Type <= RTP_TYPE_VIDEOB {
