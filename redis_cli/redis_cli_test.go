@@ -83,11 +83,35 @@ func TestSetStreamMedia(t *testing.T) {
 
 func TestVechicleChan(t *testing.T) {
 	init_redis()
-	err := GetInstance().SetVehicleChan("13731143001_2", "hope", "011")
+	err := GetInstance().SetVehicleChan("13731143001_2", PLAYBACK_TYPE, "2")
 	if err != nil {
 		t.Fatal(err)
 	}
-	v, err := GetInstance().GetVehicleChan("13731143001_2", "hope")
+	v, err := GetInstance().GetVehicleChan("13731143001_2", PLAYBACK_TYPE)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = GetInstance().SetVehicleChan("13731143001_2", PLAYBACK_STATUS, "1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	v, err = GetInstance().GetVehicleChan("13731143001_2", PLAYBACK_STATUS)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = GetInstance().SetVehicleChan("13731143001_2", LIVE_TYPE, "3")
+	if err != nil {
+		t.Fatal(err)
+	}
+	v, err = GetInstance().GetVehicleChan("13731143001_2", LIVE_TYPE)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = GetInstance().SetVehicleChan("13731143001_2", LIVE_STATUS, "1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	v, err = GetInstance().GetVehicleChan("13731143001_2", LIVE_STATUS)
 	if err != nil {
 		t.Fatal(err)
 	}
