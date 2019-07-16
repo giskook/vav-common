@@ -10,7 +10,7 @@ func (r *redis_cli) GetVavmsInfo(id, id_channel, access_server_uuid, stream_medi
 	c := r.get_conn()
 	defer c.Close()
 	c.Send("HMGET", id, ACODEC, VCODEC)
-	c.Send("GEt", id_channel)
+	c.Send("GET", id_channel)
 	c.Send("LRANGE", stream_media, "0", "-1")
 	c.Flush()
 	av, err := redis.Strings(c.Receive())
@@ -18,7 +18,7 @@ func (r *redis_cli) GetVavmsInfo(id, id_channel, access_server_uuid, stream_medi
 		return nil, err
 	}
 
-	play_type, err := redis.String(c.Receive())
+	play_type, err := redis.Int(c.Receive())
 	if err != nil {
 		return nil, err
 	}

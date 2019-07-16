@@ -9,7 +9,7 @@ type StreamMedia struct {
 type VavmsInfo struct {
 	Acodec      string
 	Vcodec      string
-	PlayType    string
+	PlayType    int
 	DomainInner string
 	DomainOuter string
 }

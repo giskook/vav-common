@@ -23,9 +23,9 @@ func (s *myserver) OnClose(conn *Connection) bool {
 	return true
 }
 
-func (s *myserver) Prepare(sim, channel string) bool {
-	log.Println("TestPrepare", sim, channel)
-	return true
+func (s *myserver) Prepare(conn *Connection, sim, channel string) error {
+	log.Println("TestPrepare", conn, sim, channel)
+	return nil
 }
 
 func TestNewSocketServer(t *testing.T) {

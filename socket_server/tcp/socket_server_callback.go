@@ -46,7 +46,7 @@ func (ss *SocketServer) OnClose(c *gotcp.Conn) {
 func (ss *SocketServer) prepare(c *Connection, id, channel string) error {
 	var err error
 	c.once_prepare.Do(func() {
-		err = c.func_prepare(id, channel)
+		err = c.func_prepare(c, id, channel)
 	})
 
 	return err

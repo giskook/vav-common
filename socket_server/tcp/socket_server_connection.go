@@ -15,7 +15,7 @@ type ConnCallback interface {
 	OnClose(*Connection) bool
 }
 
-type PrepareFunc func(string, string) error
+type PrepareFunc func(*Connection, string, string) error
 
 type Connection struct {
 	c           *gotcp.Conn
