@@ -2,7 +2,7 @@ package protocol
 
 import (
 	"bytes"
-	"github.com/giskook/vav/base"
+	"github.com/giskook/vav-common/base"
 	"strconv"
 )
 
@@ -13,6 +13,7 @@ func Parse(p []byte) *base.RTP {
 	mpt := base.ReadByte(r)
 	serial := base.ReadWord(r)
 	sim := base.ReadBcdString(r, 6)
+	sim = sim[1:]
 	logical_channel := base.ReadByte(r)
 	type_seg := base.ReadByte(r)
 	t := type_seg & 0xf0

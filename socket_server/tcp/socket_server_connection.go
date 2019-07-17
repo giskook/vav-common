@@ -10,12 +10,9 @@ import (
 )
 
 type ConnCallback interface {
-	OnDataAudio(*Connection) bool
-	OnDataVideo(*Connection) bool
+	OnPrepare(*Connection, string, string) error
 	OnClose(*Connection) bool
 }
-
-type PrepareFunc func(*Connection, string, string) error
 
 type Connection struct {
 	c           *gotcp.Conn
@@ -26,29 +23,50 @@ type Connection struct {
 
 	id string // format servertype.sim.logicalchan
 
-	pipe_aw     *os.File // current audio
-	pipe_vw     *os.File // current video
-	pipe_aw_his *os.File // history audio
-	pipe_vw_his *os.File // history video
-	pipe_ar     *os.File // for two way intercom
+	pipe_a *os.File
+	pipe_v *os.File
 
 	frame_audio base.Frame
 	frame_vedio base.Frame
 
-	once_prepare sync.Once
-	func_prepare PrepareFunc
+	once_prepare      sync.Once
+	once_start_ffmpeg sync.Once
+	ffmpeg_run        bool
+	ffmpeg_cmd        string
 }
 
-func NewConnection(c *gotcp.Conn, conf *Conf, prepare_func PrepareFunc) *Connection {
+func NewConnection(c *gotcp.Conn, conf *Conf) *Connection {
 	tcp_c := c.GetRawConn()
-	tcp_c.SetReadDeadline(time.Now().Add(conf.DefautReadLimit))
+	tcp_c.SetReadDeadline(time.Now().Add(conf.DefaultReadLimit))
 	return &Connection{
-		conf:         conf,
-		c:            c,
-		func_prepare: prepare_func,
-		recv_buffer:  bytes.NewBuffer([]byte{}),
-		exit:         make(chan struct{}),
+		conf:        conf,
+		c:           c,
+		recv_buffer: bytes.NewBuffer([]byte{}),
+		exit:        make(chan struct{}),
+		ffmpeg_run:  true,
 	}
+}
+
+func (c *Connection) OpenPipeA(pipe_a string) error {
+	var err error
+	c.pipe_a, err = os.OpenFile(pipe_a, os.O_RDWR, 0600)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Connection) OpenPipeV(pipe_v string) error {
+	var err error
+	c.pipe_v, err = os.OpenFile(pipe_v, os.O_RDWR, 0600)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Connection) SetFfmpegCmd(cmd string) {
+	c.ffmpeg_cmd = cmd
 }
 
 func (c *Connection) SetReadDeadline(minutes int) {
@@ -58,19 +76,10 @@ func (c *Connection) SetReadDeadline(minutes int) {
 func (c *Connection) Close() {
 	close(c.exit)
 	c.recv_buffer.Reset()
-	if c.pipe_aw != nil {
-		c.pipe_aw.Close()
+	if c.pipe_a != nil {
+		c.pipe_a.Close()
 	}
-	if c.pipe_vw != nil {
-		c.pipe_vw.Close()
-	}
-	if c.pipe_aw_his != nil {
-		c.pipe_aw_his.Close()
-	}
-	if c.pipe_vw_his != nil {
-		c.pipe_vw_his.Close()
-	}
-	if c.pipe_ar != nil {
-		c.pipe_ar.Close()
+	if c.pipe_v != nil {
+		c.pipe_v.Close()
 	}
 }

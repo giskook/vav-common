@@ -13,27 +13,25 @@ const (
 )
 
 type Conf struct {
-	TcpAddr         string
-	ServerType      string
-	DefautReadLimit time.Duration
+	TcpAddr          string
+	ServerType       string
+	DefaultReadLimit time.Duration
 }
 
 type SocketServer struct {
-	conf         *Conf
-	srv          *gotcp.Server
-	cm           *ConnMgr
-	callback     ConnCallback
-	func_prepare PrepareFunc
-	exit         chan struct{}
+	conf     *Conf
+	srv      *gotcp.Server
+	cm       *ConnMgr
+	callback ConnCallback
+	exit     chan struct{}
 }
 
-func NewSocketServer(conf *Conf, callback ConnCallback, prepare_func PrepareFunc) *SocketServer {
+func NewSocketServer(conf *Conf, callback ConnCallback) *SocketServer {
 	return &SocketServer{
-		conf:         conf,
-		callback:     callback,
-		func_prepare: prepare_func,
-		cm:           NewConnMgr(),
-		exit:         make(chan struct{}),
+		conf:     conf,
+		callback: callback,
+		cm:       NewConnMgr(),
+		exit:     make(chan struct{}),
 	}
 }
 

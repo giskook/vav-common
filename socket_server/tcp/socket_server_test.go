@@ -10,22 +10,14 @@ type myserver struct {
 	server *SocketServer
 }
 
-func (s *myserver) OnDataAudio(conn *Connection) bool {
-	log.Println("OnDataAudio")
-	return true
-}
-func (s *myserver) OnDataVideo(conn *Connection) bool {
-	log.Println("OnDataVideo")
-	return true
-}
 func (s *myserver) OnClose(conn *Connection) bool {
 	log.Println("TestOnClose")
 	return true
 }
 
-func (s *myserver) Prepare(conn *Connection, sim, channel string) error {
+func (s *myserver) OnPrepare(conn *Connection, sim, channel string) (string, error) {
 	log.Println("TestPrepare", conn, sim, channel)
-	return nil
+	return "", nil
 }
 
 func TestNewSocketServer(t *testing.T) {
@@ -36,7 +28,7 @@ func TestNewSocketServer(t *testing.T) {
 		DefautReadLimit: time.Duration(1) * time.Minute,
 	}
 
-	my.server = NewSocketServer(conf, my, my.Prepare)
+	my.server = NewSocketServer(conf, my)
 	my.server.Start()
 	for {
 	}

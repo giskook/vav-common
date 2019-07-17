@@ -38,41 +38,41 @@ func TestSetAccessServer(t *testing.T) {
 
 func TestSetStreamMedia(t *testing.T) {
 	init_redis()
-	GetInstance().SetStreamMedia("stream_media", []*base.StreamMedia{
+	GetInstance().SetStreamMedia("vavms_stream_media", []*base.StreamMedia{
 		&base.StreamMedia{
 			AccessUUID:  "vavms1",
-			DomainInner: "rtmp://127.0.0.1:8888/vavms",
-			DomainOuter: "rtmp://192.168.2.121:8888/vavms",
+			DomainInner: "rtmp://127.0.0.1:8080/myapp",
+			DomainOuter: "rtmp://192.168.2.122:8080/myapp",
 		},
 		&base.StreamMedia{
 			AccessUUID:  "vavms2",
-			DomainInner: "rtmp://127.0.0.1:8888/vavms",
-			DomainOuter: "rtmp://192.168.2.122:8888/vavms",
+			DomainInner: "rtmp://127.0.0.1:8080/myapp",
+			DomainOuter: "rtmp://192.168.2.121:8080/myapp",
 		},
 		&base.StreamMedia{
 			AccessUUID:  "vavms3",
-			DomainInner: "rtmp://127.0.0.1:8888/vavms",
-			DomainOuter: "rtmp://192.168.2.123:8888/vavms",
+			DomainInner: "rtmp://127.0.0.1:8080/myapp",
+			DomainOuter: "rtmp://192.168.2.123:8080/myapp",
 		},
 		&base.StreamMedia{
 			AccessUUID:  "vavms4",
-			DomainInner: "rtmp://127.0.0.1:8888/vavms",
-			DomainOuter: "rtmp://192.168.2.124:8888/vavms",
+			DomainInner: "rtmp://127.0.0.1:8080/myapp",
+			DomainOuter: "rtmp://192.168.2.124:8080/myapp",
 		},
 	})
 
-	sm, err := GetInstance().GetStreamMedia("stream_media", "0", "-1")
+	sm, err := GetInstance().GetStreamMedia("vavms_stream_media", "0", "-1")
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, v := range sm {
 		t.Log(*v)
 	}
-	err = GetInstance().DelStreamMedia("stream_media", "-1")
+	err = GetInstance().DelStreamMedia("vavms_stream_media", "-1")
 	if err != nil {
 		t.Fatal(err)
 	}
-	sm, err = GetInstance().GetStreamMedia("stream_media", "0", "-1")
+	sm, err = GetInstance().GetStreamMedia("vavms_stream_media", "0", "-1")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -83,35 +83,35 @@ func TestSetStreamMedia(t *testing.T) {
 
 func TestVechicleChan(t *testing.T) {
 	init_redis()
-	err := GetInstance().SetVehicleChan("13731143001_2", PLAYBACK_TYPE, "2")
+	err := GetInstance().SetVehicleChan("15226563111_3", PLAYBACK_TYPE, "2")
 	if err != nil {
 		t.Fatal(err)
 	}
-	v, err := GetInstance().GetVehicleChan("13731143001_2", PLAYBACK_TYPE)
+	v, err := GetInstance().GetVehicleChan("15226563111_3", PLAYBACK_TYPE)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = GetInstance().SetVehicleChan("13731143001_2", PLAYBACK_STATUS, "1")
+	err = GetInstance().SetVehicleChan("15226563111_3", PLAYBACK_STATUS, "0")
 	if err != nil {
 		t.Fatal(err)
 	}
-	v, err = GetInstance().GetVehicleChan("13731143001_2", PLAYBACK_STATUS)
+	v, err = GetInstance().GetVehicleChan("15226563111_3", PLAYBACK_STATUS)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = GetInstance().SetVehicleChan("13731143001_2", LIVE_TYPE, "3")
+	err = GetInstance().SetVehicleChan("15226563111_3", LIVE_TYPE, "1")
 	if err != nil {
 		t.Fatal(err)
 	}
-	v, err = GetInstance().GetVehicleChan("13731143001_2", LIVE_TYPE)
+	v, err = GetInstance().GetVehicleChan("15226563111_3", LIVE_TYPE)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = GetInstance().SetVehicleChan("13731143001_2", LIVE_STATUS, "1")
+	err = GetInstance().SetVehicleChan("15226563111_3", LIVE_STATUS, "1")
 	if err != nil {
 		t.Fatal(err)
 	}
-	v, err = GetInstance().GetVehicleChan("13731143001_2", LIVE_STATUS)
+	v, err = GetInstance().GetVehicleChan("15226563111_3", LIVE_STATUS)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -120,12 +120,12 @@ func TestVechicleChan(t *testing.T) {
 
 func TestVehicleStreamFormat(t *testing.T) {
 	init_redis()
-	err := GetInstance().SetVehicleStreamFormat("13731143001", "g726", "h264")
+	err := GetInstance().SetVehicleStreamFormat("15226563111", "g726", "h264")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	audio_format, vedio_format, err := GetInstance().GetVehicleStreamFormat("13731143001")
+	audio_format, vedio_format, err := GetInstance().GetVehicleStreamFormat("15226563111")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -135,12 +135,12 @@ func TestVehicleStreamFormat(t *testing.T) {
 func TestGetVavmsInfo(t *testing.T) {
 	init_redis()
 
-	vavms_info, err := GetInstance().GetVavmsInfo("13731143001", "13731143001_2", "vavms2", "stream_media")
+	vavms_info, err := GetInstance().GetVavmsInfo("15226563111", "15226563111_3", "vavms2", "vavms_stream_media")
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Log(vavms_info)
-	vavms_info, err = GetInstance().GetVavmsInfo("13731143001", "13731143001_2", "vavms1", "stream_media")
+	vavms_info, err = GetInstance().GetVavmsInfo("15226563111", "15226563111_3", "vavms1", "vavms_stream_media")
 	if err != nil {
 		t.Fatal(err)
 	}
