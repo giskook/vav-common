@@ -33,11 +33,8 @@ func (cm *ConnMgr) Get(id string) *Connection {
 	return nil
 }
 
-func (cm *ConnMgr) Del(c *Connection) {
-	cc := cm.Get(c.id)
-	if cc != nil {
-		cm.mutex.Lock()
-		delete(cm.connections, c.id)
-		cm.mutex.Unlock()
-	}
+func (cm *ConnMgr) Del(id string) {
+	cm.mutex.Lock()
+	delete(cm.connections, id)
+	cm.mutex.Unlock()
 }

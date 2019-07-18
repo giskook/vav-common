@@ -11,17 +11,24 @@ import (
 
 type ConnCallback interface {
 	OnPrepare(*Connection, string, string) error
-	OnClose(*Connection) bool
+	OnClose(*Connection) error
 }
+
+const (
+	CONN_PLAY_TYPE_LIVE      string = "live"
+	CONN_PLAY_TYPE_PLAY_BACK string = "back"
+)
 
 type Connection struct {
 	c           *gotcp.Conn
 	recv_buffer *bytes.Buffer
 	exit        chan struct{}
-	status      uint8
 	conf        *Conf
 
-	id string // format servertype.sim.logicalchan
+	ID       string // for vavms sim_logicalchan_play_type
+	SIM      string
+	Channel  string
+	PlayType string
 
 	pipe_a *os.File
 	pipe_v *os.File
@@ -65,7 +72,11 @@ func (c *Connection) OpenPipeV(pipe_v string) error {
 	return nil
 }
 
-func (c *Connection) SetFfmpegCmd(cmd string) {
+func (c *Connection) SetProperty(sim, channel, play_type, cmd string) {
+	c.SIM = sim
+	c.Channel = channel
+	c.PlayType = play_type
+	c.ID = sim + "_" + channel + "_" + play_type
 	c.ffmpeg_cmd = cmd
 }
 

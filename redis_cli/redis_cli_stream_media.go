@@ -2,8 +2,19 @@ package redis_cli
 
 import (
 	"encoding/json"
+	gkbase "github.com/giskook/go/base"
 	"github.com/giskook/vav-common/base"
 	"github.com/gomodule/redigo/redis"
+)
+
+const (
+	// 0 2 fail 1 ok
+	SCRIPT_STREAM_MEDIA_DEL = `local key 
+	local result 
+	key = redis.call("LINDEX", KEYS[1], KEYS[2])
+	result = redis.call("LREM", KEYS[1], 1, key)
+	return result
+	`
 )
 
 func (r *redis_cli) SetStreamMedia(stream_media string, media []*base.StreamMedia) error {
@@ -54,18 +65,33 @@ func (r *redis_cli) GetStreamMedia(stream_media string, start, stop string) ([]*
 	return sm, nil
 }
 
-func (r *redis_cli) DelStreamMedia(stream_media, index string) error {
+func (r *redis_cli) DelStreamMedia(stream_media, index string) bool {
+	// c := r.get_conn()
+	//	defer c.Close()
+	//
+	//	ss, err := redis.String(c.Do("LINDEX", stream_media, index))
+	//	if err != nil {
+	//		return err
+	//	}
+	//	_, err = c.Do("LREM", stream_media, 1, ss)
+	//	if err != nil {
+	//		return err
+	//}
+
 	c := r.get_conn()
 	defer c.Close()
 
-	ss, err := redis.String(c.Do("LINDEX", stream_media, index))
+	s := redis.NewScript(2, SCRIPT_STREAM_MEDIA_DEL)
+	result, err := redis.Int(s.Do(c, stream_media, index))
 	if err != nil {
-		return err
-	}
-	_, err = c.Do("LREM", stream_media, 1, ss)
-	if err != nil {
-		return err
+		gkbase.ErrorCheck(err)
+		return false
 	}
 
-	return nil
+	switch result {
+	case 0:
+		return false
+	}
+
+	return true
 }

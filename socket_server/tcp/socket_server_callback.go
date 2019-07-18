@@ -2,6 +2,7 @@ package socket_server
 
 import (
 	"github.com/gansidui/gotcp"
+	mybase "github.com/giskook/go/base"
 	"github.com/giskook/vav-common/base"
 	"github.com/giskook/vav-common/protocol"
 	"log"
@@ -20,15 +21,13 @@ func (ss *SocketServer) OnConnect(c *gotcp.Conn) bool {
 
 func (ss *SocketServer) OnClose(c *gotcp.Conn) {
 	connection := c.GetExtraData().(*Connection)
-	//	err := redis_cli.GetInstance().VehicleChannelSet(connection.term.ID, connection.term.LogicalChannel, "0", "")
-	//	if err != nil {
-	//		log.Printf(ERR_SS_UUID, connection.term.ID, connection.term.LogicalChannel, err.Error())
-	//	}
-	ss.cm.Del(connection)
+	ss.cm.Del(connection.ID)
 	connection.Close()
 	log.Printf("<DIS> %v\n", c.GetRawConn())
-	ss.callback.OnClose(connection)
-
+	err := ss.callback.OnClose(connection)
+	if err != nil {
+		mybase.ErrorCheckPlus(err, connection.ID)
+	}
 	//debug.PrintStack()
 }
 
@@ -36,6 +35,7 @@ func (ss *SocketServer) prepare(c *Connection, id, channel string) error {
 	var err error
 	c.once_prepare.Do(func() {
 		err = ss.callback.OnPrepare(c, id, channel)
+		ss.cm.Put(c.ID, c)
 	})
 
 	return err

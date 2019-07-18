@@ -7,14 +7,19 @@ import (
 )
 
 const (
-	PLAY_TYPE_V      int    = 1
-	PLAY_TYPE_A      int    = 2
-	LIVE_TYPE        string = "live_type"   // 0 none 1 video 2 audio 3 both
-	LIVE_STATUS      string = "live_status" // http 1 rtp set 2
-	PLAYBACK_TYPE    string = "play_back_type"
-	PLAYBACK_STATUS  string = "play_back_status"
-	PLAY_STATUS_INIT int    = 1
-	PLAY_STATUS_OK   int    = 2
+	PLAY_TYPE_V     int    = 1
+	PLAY_TYPE_A     int    = 2
+	LIVE_TYPE       string = "live_type"   // 0 none 1 video 2 audio 3 both
+	LIVE_STATUS     string = "live_status" // http 1 rtp set 2
+	PLAYBACK_TYPE   string = "play_back_type"
+	PLAYBACK_STATUS string = "play_back_status"
+
+	PLAY_STATUS_INIT int = 1
+	PLAY_STATUS_OK   int = 2
+
+	PLAY_STATUS_REDIS_NONE string = "0"
+	PLAY_STATUS_REDIS_INIT string = "1"
+	PLAY_STATUS_REDIS_OK   string = "2"
 )
 
 func (r *redis_cli) GetVavmsInfo(id, id_channel, access_server_uuid, stream_media string) (*base.VavmsInfo, error) {

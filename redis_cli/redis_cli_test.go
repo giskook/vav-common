@@ -68,10 +68,8 @@ func TestSetStreamMedia(t *testing.T) {
 	for _, v := range sm {
 		t.Log(*v)
 	}
-	err = GetInstance().DelStreamMedia("vavms_stream_media", "-1")
-	if err != nil {
-		t.Fatal(err)
-	}
+	ok := GetInstance().DelStreamMedia("vavms_stream_media", "-1")
+	t.Log(ok)
 	sm, err = GetInstance().GetStreamMedia("vavms_stream_media", "0", "-1")
 	if err != nil {
 		t.Fatal(err)
