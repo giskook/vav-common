@@ -79,6 +79,22 @@ func TestSetStreamMedia(t *testing.T) {
 	for _, v := range sm {
 		t.Log(*v)
 	}
+	stream_media := &base.StreamMedia{
+		AccessUUID:  "vavms4",
+		DomainInner: "rtmp://127.0.0.1:8080/myapp",
+		DomainOuter: "rtmp://192.168.2.124:8080/myapp",
+	}
+	result = GetInstance().UpdateStreamMedia("vavms_stream_media", "1", stream_media)
+	t.Log(result)
+	result = GetInstance().UpdateStreamMedia("vavms_stream_media", "5", stream_media)
+	t.Log(result)
+	sm, err = GetInstance().GetStreamMedia("vavms_stream_media", "0", "-1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, v := range sm {
+		t.Log(*v)
+	}
 }
 
 func TestVechicleChan(t *testing.T) {

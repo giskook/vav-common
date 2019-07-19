@@ -8,10 +8,21 @@ import (
 )
 
 const (
-	// 0 2 fail 1 ok
+	// 0  fail 1 ok
 	SCRIPT_STREAM_MEDIA_DEL = `local key 
 	local result 
 	key = redis.call("LINDEX", KEYS[1], KEYS[2])
+	result = redis.call("LREM", KEYS[1], 1, key)
+	return result
+	`
+	// 0  fail 1 ok
+	SCRIPT_STREAM_MEDIA_UPDATE = `local key 
+	local result 
+	key = redis.call("LINDEX", KEYS[1], KEYS[2]) 
+	result = redis.call("LINSERT", KEYS[1], "AFTER", key, KEYS[3])
+	if tonumber(result) <= 0 then 
+		return 0
+	end
 	result = redis.call("LREM", KEYS[1], 1, key)
 	return result
 	`
@@ -66,23 +77,35 @@ func (r *redis_cli) GetStreamMedia(stream_media string, start, stop string) ([]*
 }
 
 func (r *redis_cli) DelStreamMedia(stream_media, index string) bool {
-	// c := r.get_conn()
-	//	defer c.Close()
-	//
-	//	ss, err := redis.String(c.Do("LINDEX", stream_media, index))
-	//	if err != nil {
-	//		return err
-	//	}
-	//	_, err = c.Do("LREM", stream_media, 1, ss)
-	//	if err != nil {
-	//		return err
-	//}
-
 	c := r.get_conn()
 	defer c.Close()
 
 	s := redis.NewScript(2, SCRIPT_STREAM_MEDIA_DEL)
 	result, err := redis.Int(s.Do(c, stream_media, index))
+	if err != nil {
+		gkbase.ErrorCheck(err)
+		return false
+	}
+
+	switch result {
+	case 0:
+		return false
+	}
+
+	return true
+}
+
+func (r *redis_cli) UpdateStreamMedia(stream_media, index string, new_stream_media *base.StreamMedia) bool {
+	c := r.get_conn()
+	defer c.Close()
+
+	data, err := json.Marshal(new_stream_media)
+	if err != nil {
+		gkbase.ErrorCheck(err)
+		return false
+	}
+	s := redis.NewScript(3, SCRIPT_STREAM_MEDIA_UPDATE)
+	result, err := redis.Int(s.Do(c, stream_media, index, string(data)))
 	if err != nil {
 		gkbase.ErrorCheck(err)
 		return false
