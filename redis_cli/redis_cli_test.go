@@ -18,17 +18,17 @@ func init_redis() {
 	GetInstance().Init(conf)
 }
 
-func TestSetAccessServer(t *testing.T) {
+func TestSetAccessAddr(t *testing.T) {
 	init_redis()
-	GetInstance().SetAccessServer("vavms", "192.168.2.122", "8876")
-	ip, port, err := GetInstance().GetAccessServer("vavms")
+	GetInstance().SetAccessAddr("vavms", "192.168.2.122", "8876")
+	ip, port, err := GetInstance().GetAccessAddr("vavms")
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Log(ip)
 	t.Log(port)
-	GetInstance().SetAccessServer("vavms", "192.168.2.123", "8877")
-	ip, port, err = GetInstance().GetAccessServer("vavms")
+	GetInstance().SetAccessAddr("vavms", "192.168.2.123", "8877")
+	ip, port, err = GetInstance().GetAccessAddr("vavms")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -99,39 +99,6 @@ func TestSetStreamMedia(t *testing.T) {
 
 func TestVechicleChan(t *testing.T) {
 	init_redis()
-	err := GetInstance().SetVehicleChan("15226563111_3", PLAYBACK_TYPE, "2")
-	if err != nil {
-		t.Fatal(err)
-	}
-	v, err := GetInstance().GetVehicleChan("15226563111_3", PLAYBACK_TYPE)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = GetInstance().SetVehicleChan("15226563111_3", PLAYBACK_STATUS, "0")
-	if err != nil {
-		t.Fatal(err)
-	}
-	v, err = GetInstance().GetVehicleChan("15226563111_3", PLAYBACK_STATUS)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = GetInstance().SetVehicleChan("15226563111_3", LIVE_TYPE, "1")
-	if err != nil {
-		t.Fatal(err)
-	}
-	v, err = GetInstance().GetVehicleChan("15226563111_3", LIVE_TYPE)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = GetInstance().SetVehicleChan("15226563111_3", LIVE_STATUS, "1")
-	if err != nil {
-		t.Fatal(err)
-	}
-	v, err = GetInstance().GetVehicleChan("15226563111_3", LIVE_STATUS)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Log(v)
 }
 
 func TestVehicleStreamFormat(t *testing.T) {
@@ -151,7 +118,7 @@ func TestVehicleStreamFormat(t *testing.T) {
 func TestGetVavmsInfo(t *testing.T) {
 	init_redis()
 
-	vavms_info, err := GetInstance().GetVavmsInfo("15226563111", "15226563111_3", "vavms2", "vavms_stream_media")
+	vavms_info, err := GetInstance().GetVavmsInfo("15226563111", "3", "vavms2", "vavms_stream_media")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -161,4 +128,17 @@ func TestGetVavmsInfo(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Log(vavms_info)
+}
+
+const (
+	SCRIPT = `
+	local result
+	result = redis.call("HSET", KEYS[1], KEYS[2], KEYS[3])
+	return result
+	`
+)
+
+func TestScriptDo(t *testing.T) {
+	init_redis()
+	t.Log(GetInstance().DoScript(SCRIPT, "test_script", "test", "123"))
 }

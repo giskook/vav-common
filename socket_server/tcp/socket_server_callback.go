@@ -103,9 +103,10 @@ func (ss *SocketServer) OnMessage(c *gotcp.Conn, p gotcp.Packet) bool {
 					connection.frame_audio.Data = append(connection.frame_audio.Data, rtp.Data...)
 				} else {
 					connection.frame_audio.Data = append(connection.frame_audio.Data, rtp.Data...)
-					log.Println("write to audio")
 					_, err = connection.pipe_a.Write(connection.frame_audio.Data)
-					log.Printf("<INFO> %s %s write to audio fail err msg :%s \n", rtp.SIM, rtp.LogicalChannel, err.Error())
+					if err != nil {
+						log.Printf("<INFO> %s %s write to audio fail err msg :%s \n", rtp.SIM, rtp.LogicalChannel, err.Error())
+					}
 					connection.frame_audio.Data = nil
 				}
 			}

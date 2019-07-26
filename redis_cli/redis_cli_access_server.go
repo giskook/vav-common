@@ -5,11 +5,11 @@ import (
 )
 
 const (
-	ACCESS_SERVER_IP   string = "ACCESS_SERVER_IP"
-	ACCESS_SERVER_PORT string = "ACCESS_SERVER_PORT"
+	ACCESS_SERVER_IP   string = "ip"
+	ACCESS_SERVER_PORT string = "port"
 )
 
-func (r *redis_cli) SetAccessServer(access_server_key, ip, port string) error {
+func (r *redis_cli) SetAccessAddr(access_server_key, ip, port string) error {
 	c := r.get_conn()
 	defer c.Close()
 	_, err := c.Do("HMSET", access_server_key, ACCESS_SERVER_IP, ip, ACCESS_SERVER_PORT, port)
@@ -20,7 +20,7 @@ func (r *redis_cli) SetAccessServer(access_server_key, ip, port string) error {
 	return nil
 }
 
-func (r *redis_cli) GetAccessServer(access_server_key string) (string, string, error) {
+func (r *redis_cli) GetAccessAddr(access_server_key string) (string, string, error) {
 	c := r.get_conn()
 	defer c.Close()
 

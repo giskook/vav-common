@@ -7,12 +7,11 @@ type StreamMedia struct {
 }
 
 type VavmsInfo struct {
-	Acodec         string
-	Vcodec         string
-	LiveType       int // 0 none 1 video 2 audio 3 both
-	LiveStatus     int // http 1 rtp set 2
-	PlayBackType   int
-	PlayBackStatus int
-	DomainInner    string
-	DomainOuter    string
+	Acodec      string
+	Vcodec      string
+	Status      string
+	DataType    string
+	TTL         string
+	DomainInner string
+	DomainOuter string
 }

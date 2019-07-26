@@ -2,46 +2,54 @@ package redis_cli
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/giskook/vav-common/base"
 	"github.com/gomodule/redigo/redis"
 )
 
-const (
-	PLAY_TYPE_V     int    = 1
-	PLAY_TYPE_A     int    = 2
-	LIVE_TYPE       string = "live_type"   // 0 none 1 video 2 audio 3 both
-	LIVE_STATUS     string = "live_status" // http 1 rtp set 2
-	PLAYBACK_TYPE   string = "play_back_type"
-	PLAYBACK_STATUS string = "play_back_status"
+const ()
 
-	PLAY_STATUS_INIT int = 1
-	PLAY_STATUS_OK   int = 2
-
-	PLAY_STATUS_REDIS_NONE string = "0"
-	PLAY_STATUS_REDIS_INIT string = "1"
-	PLAY_STATUS_REDIS_OK   string = "2"
-)
-
-func (r *redis_cli) GetVavmsInfo(id, id_channel, access_server_uuid, stream_media string) (*base.VavmsInfo, error) {
+func (r *redis_cli) GetVavmsInfo(id, channel, access_server_uuid, stream_media string) (*base.VavmsInfo, error) {
 	c := r.get_conn()
 	defer c.Close()
 	c.Send("HMGET", id, ACODEC, VCODEC)
-	c.Send("HMGET", id_channel, LIVE_TYPE, LIVE_STATUS, PLAYBACK_TYPE, PLAYBACK_STATUS)
+	c.Send("GET", id+"_"+channel+"_status")
+	c.Send("HMGET", id+"_"+channel+"_live", "data_type", "ttl")
+	c.Send("HMGET", id+"_"+channel+"_back", "data_type", "ttl")
 	c.Send("LRANGE", stream_media, "0", "-1")
 	c.Flush()
 	av, err := redis.Strings(c.Receive())
 	if err != nil {
-		return nil, err
+		return nil, errors.New(fmt.Sprintf("sim %s channel %s get av audio and video format error %s ", id, channel, err.Error()))
 	}
 
-	status, err := redis.Ints(c.Receive())
+	status, err := redis.String(c.Receive())
 	if err != nil {
-		return nil, err
+		return nil, errors.New(fmt.Sprintf("sim %s channel %s get status error %s ", id, channel, err.Error()))
+	}
+	var data_type, ttl string
+
+	live_data_type_ttl, err_live := redis.Strings(c.Receive())
+	back_data_type_ttl, err_back := redis.Strings(c.Receive())
+	if status == "live" {
+		if err_live != nil {
+			return nil, errors.New(fmt.Sprintf("sim %s channel %s status %s get data type and ttl error %s", id, channel, status, err_live.Error()))
+		}
+		data_type = live_data_type_ttl[0]
+		ttl = live_data_type_ttl[1]
+	}
+	if status == "back" {
+		if err_back != nil {
+			return nil, errors.New(fmt.Sprintf("sim %s channel %s status %s get data type and ttl error %s", id, channel, status, err_live.Error()))
+		}
+		data_type = back_data_type_ttl[0]
+		ttl = back_data_type_ttl[1]
 	}
 
 	srvs, err := redis.Values(c.Receive())
 	if err != nil {
-		return nil, err
+		return nil, errors.New(fmt.Sprintf("sim %s channel %s get stream media error %s ", id, channel, err.Error()))
 	}
 
 	srv_single := new(base.StreamMedia)
@@ -56,13 +64,12 @@ func (r *redis_cli) GetVavmsInfo(id, id_channel, access_server_uuid, stream_medi
 	}
 
 	return &base.VavmsInfo{
-		Acodec:         av[0],
-		Vcodec:         av[1],
-		LiveType:       status[0],
-		LiveStatus:     status[1],
-		PlayBackType:   status[2],
-		PlayBackStatus: status[3],
-		DomainInner:    srv_single.DomainInner,
-		DomainOuter:    srv_single.DomainOuter,
+		Acodec:      av[0],
+		Vcodec:      av[1],
+		Status:      status,
+		DataType:    data_type,
+		TTL:         ttl,
+		DomainInner: srv_single.DomainInner,
+		DomainOuter: srv_single.DomainOuter,
 	}, nil
 }

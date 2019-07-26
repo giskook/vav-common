@@ -14,11 +14,6 @@ type ConnCallback interface {
 	OnClose(*Connection) error
 }
 
-const (
-	CONN_PLAY_TYPE_LIVE      string = "live"
-	CONN_PLAY_TYPE_PLAY_BACK string = "back"
-)
-
 type Connection struct {
 	c           *gotcp.Conn
 	recv_buffer *bytes.Buffer
@@ -80,8 +75,8 @@ func (c *Connection) SetProperty(sim, channel, play_type, cmd string) {
 	c.ffmpeg_cmd = cmd
 }
 
-func (c *Connection) SetReadDeadline(minutes int) {
-	c.c.GetRawConn().SetReadDeadline(time.Now().Add(time.Duration(minutes) * time.Minute))
+func (c *Connection) SetReadDeadline(seconds int) {
+	c.c.GetRawConn().SetReadDeadline(time.Now().Add(time.Duration(seconds) * time.Second))
 }
 
 func (c *Connection) Close() {
