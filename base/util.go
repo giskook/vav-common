@@ -1,6 +1,7 @@
 package base
 
 import (
+	"bufio"
 	"os"
 	"path"
 	"syscall"
@@ -54,4 +55,25 @@ func Exp2(n uint64) uint64 {
 	}
 
 	return result
+}
+
+func ReadLineFile(file string) ([]string, error) {
+	f, err := os.Open(file)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	values := make([]string, 0)
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		values = append(values, scanner.Text())
+	}
+
+	err = scanner.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return values, nil
 }
