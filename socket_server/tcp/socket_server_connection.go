@@ -35,6 +35,10 @@ type Connection struct {
 	once_start_ffmpeg sync.Once
 	ffmpeg_run        bool
 	ffmpeg_cmd        string
+	file_path_a       string
+	file_path_v       string
+	acodec            string
+	vcodec            string
 }
 
 func NewConnection(c *gotcp.Conn, conf *Conf) *Connection {
@@ -67,12 +71,16 @@ func (c *Connection) OpenPipeV(pipe_v string) error {
 	return nil
 }
 
-func (c *Connection) SetProperty(sim, channel, play_type, cmd string) {
+func (c *Connection) SetProperty(sim, channel, play_type, cmd, file_path_a, file_path_v, acodec, vcodec string) {
 	c.SIM = sim
 	c.Channel = channel
 	c.PlayType = play_type
 	c.ID = sim + "_" + channel + "_" + play_type
 	c.ffmpeg_cmd = cmd
+	c.file_path_a = file_path_a
+	c.file_path_v = file_path_v
+	c.acodec = acodec
+	c.vcodec = vcodec
 }
 
 func (c *Connection) SetReadDeadline(seconds int) {

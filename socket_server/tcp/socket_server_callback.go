@@ -8,8 +8,39 @@ import (
 	"log"
 	"os/exec"
 	//"runtime/debug"
+	"os"
 	//"time"
 )
+
+func Copy(c *Connection, in, out string) error {
+	fin, err := os.OpenFile(in, os.O_RDONLY, 0600)
+	defer fin.Close()
+	if err != nil {
+		return err
+	}
+	fout, err := os.Create(out)
+	if err != nil {
+		return err
+	}
+	defer fout.Close()
+	b := make([]byte, 1024)
+	for {
+		select {
+		case <-c.exit:
+			return nil
+		default:
+			n, err := fin.Read(b)
+			if err != nil {
+				return nil
+			}
+			_, err = fout.Write(b[0:n])
+			if err != nil {
+				return err
+			}
+			fout.Sync()
+		}
+	}
+}
 
 func (ss *SocketServer) OnConnect(c *gotcp.Conn) bool {
 	connection := NewConnection(c, ss.conf)
@@ -64,12 +95,26 @@ func (ss *SocketServer) OnMessage(c *gotcp.Conn, p gotcp.Packet) bool {
 			go func() {
 				connection.once_start_ffmpeg.Do(func() {
 					log.Printf("<INFO> %s %s %s\n", rtp.SIM, rtp.LogicalChannel, connection.ffmpeg_cmd)
-					cmd := exec.Command("bash", "-c", connection.ffmpeg_cmd)
-					_, err := cmd.Output()
-					if err != nil {
-						log.Printf("<INFO> run ffmpeg error %s %s err msg %s\n", rtp.SIM, rtp.LogicalChannel, err.Error())
+					do_ffmpeg := func() {
+						cmd := exec.Command("bash", "-c", connection.ffmpeg_cmd)
+						_, err := cmd.Output()
+						if err != nil {
+							log.Printf("<INFO> run ffmpeg error %s %s err msg %s\n", rtp.SIM, rtp.LogicalChannel, err.Error())
+						}
+						connection.ffmpeg_run = false
 					}
-					connection.ffmpeg_run = false
+					if !ss.conf.Debug.Debug {
+						do_ffmpeg()
+					} else {
+						if connection.SIM == ss.conf.Debug.DestID {
+							if ss.conf.Debug.RecordFileA {
+								Copy(connection, connection.file_path_a, "./"+connection.SIM+"_"+connection.Channel+"."+connection.acodec)
+								connection.ffmpeg_run = false
+							}
+						} else {
+							do_ffmpeg()
+						}
+					}
 				})
 			}()
 			if !connection.ffmpeg_run {
@@ -101,6 +146,7 @@ func (ss *SocketServer) OnMessage(c *gotcp.Conn, p gotcp.Packet) bool {
 					connection.frame_audio.SIM = rtp.SIM
 					connection.frame_audio.LogicalChannel = rtp.LogicalChannel
 					connection.frame_audio.Data = append(connection.frame_audio.Data, rtp.Data...)
+					log.Println("first")
 				} else {
 					connection.frame_audio.Data = append(connection.frame_audio.Data, rtp.Data...)
 					_, err = connection.pipe_a.Write(connection.frame_audio.Data)

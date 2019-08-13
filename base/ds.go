@@ -7,11 +7,12 @@ type StreamMedia struct {
 }
 
 type VavmsInfo struct {
-	Acodec      string
-	Vcodec      string
-	Status      string
-	DataType    string
-	TTL         string
-	DomainInner string
-	DomainOuter string
+	Acodec       string
+	Vcodec       string
+	SamplingRate string
+	Status       string
+	DataType     string
+	TTL          string
+	DomainInner  string
+	DomainOuter  string
 }

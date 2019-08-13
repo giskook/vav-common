@@ -12,10 +12,17 @@ const (
 	SERVER_TYPE_TWIS  string = "a"
 )
 
+type DebugCnf struct {
+	Debug       bool
+	DestID      string
+	RecordFileA bool
+}
+
 type Conf struct {
 	TcpAddr          string
 	ServerType       string
 	DefaultReadLimit time.Duration
+	Debug            *DebugCnf
 }
 
 type SocketServer struct {

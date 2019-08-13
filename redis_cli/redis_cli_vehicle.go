@@ -5,14 +5,15 @@ import (
 )
 
 const (
-	ACODEC string = "acodec"
-	VCODEC string = "vcodec"
+	ACODEC        string = "acodec"
+	VCODEC        string = "vcodec"
+	SAMPLING_RATE string = "sampling_rate"
 )
 
-func (r *redis_cli) SetVehicleStreamFormat(id, acodec, vcodec string) error {
+func (r *redis_cli) SetVehicleStreamFormat(id, acodec, vcodec, sampling_rate string) error {
 	c := r.get_conn()
 	defer c.Close()
-	_, err := c.Do("HMSET", id, ACODEC, acodec, VCODEC, vcodec)
+	_, err := c.Do("HMSET", id, ACODEC, acodec, VCODEC, vcodec, SAMPLING_RATE, sampling_rate)
 	if err != nil {
 		return err
 	}

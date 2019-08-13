@@ -13,15 +13,15 @@ const ()
 func (r *redis_cli) GetVavmsInfo(id, channel, access_server_uuid, stream_media string) (*base.VavmsInfo, error) {
 	c := r.get_conn()
 	defer c.Close()
-	c.Send("HMGET", id, ACODEC, VCODEC)
+	c.Send("HMGET", id, ACODEC, VCODEC, SAMPLING_RATE)
 	c.Send("GET", id+"_"+channel+"_status")
 	c.Send("HMGET", id+"_"+channel+"_live", "data_type", "ttl")
 	c.Send("HMGET", id+"_"+channel+"_back", "data_type", "ttl")
 	c.Send("LRANGE", stream_media, "0", "-1")
 	c.Flush()
-	av, err := redis.Strings(c.Receive())
+	avs, err := redis.Strings(c.Receive())
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("sim %s channel %s get av audio and video format error %s ", id, channel, err.Error()))
+		return nil, errors.New(fmt.Sprintf("sim %s channel %s get avs audio and video format error %s ", id, channel, err.Error()))
 	}
 
 	status, err := redis.String(c.Receive())
@@ -64,12 +64,13 @@ func (r *redis_cli) GetVavmsInfo(id, channel, access_server_uuid, stream_media s
 	}
 
 	return &base.VavmsInfo{
-		Acodec:      av[0],
-		Vcodec:      av[1],
-		Status:      status,
-		DataType:    data_type,
-		TTL:         ttl,
-		DomainInner: srv_single.DomainInner,
-		DomainOuter: srv_single.DomainOuter,
+		Acodec:       avs[0],
+		Vcodec:       avs[1],
+		SamplingRate: avs[2],
+		Status:       status,
+		DataType:     data_type,
+		TTL:          ttl,
+		DomainInner:  srv_single.DomainInner,
+		DomainOuter:  srv_single.DomainOuter,
 	}, nil
 }
