@@ -39,6 +39,11 @@ type Connection struct {
 	file_path_v       string
 	acodec            string
 	vcodec            string
+
+	// twis
+	ffmpeg_cmd_twis string
+	pipe_down_w     *os.File
+	pipe_down_r     *os.File
 }
 
 func NewConnection(c *gotcp.Conn, conf *Conf) *Connection {
@@ -56,6 +61,24 @@ func NewConnection(c *gotcp.Conn, conf *Conf) *Connection {
 func (c *Connection) OpenPipeA(pipe_a string) error {
 	var err error
 	c.pipe_a, err = os.OpenFile(pipe_a, os.O_RDWR, 0600)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Connection) OpenPipeW(pipe_w string) error {
+	var err error
+	c.pipe_down_w, err = os.OpenFile(pipe_w, os.O_RDWR, 0600)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Connection) OpenPipeR(pipe_r string) error {
+	var err error
+	c.pipe_down_r, err = os.OpenFile(pipe_r, os.O_RDWR, 0600)
 	if err != nil {
 		return err
 	}
@@ -83,11 +106,19 @@ func (c *Connection) SetProperty(sim, channel, play_type, cmd, file_path_a, file
 	c.vcodec = vcodec
 }
 
+func (c *Connection) SetFfmepgDown(cmd string) {
+	c.ffmpeg_args_d = cmd
+}
+
 func (c *Connection) SetReadDeadline(seconds int) {
 	c.c.GetRawConn().SetReadDeadline(time.Now().Add(time.Duration(seconds) * time.Second))
 }
 
 func (c *Connection) Close() {
+	c.c.Close()
+}
+
+func (c *Connection) ShutDown() {
 	close(c.exit)
 	c.recv_buffer.Reset()
 	if c.pipe_a != nil {
@@ -95,5 +126,11 @@ func (c *Connection) Close() {
 	}
 	if c.pipe_v != nil {
 		c.pipe_v.Close()
+	}
+	if c.pipe_down_w != nil {
+		c.pipe_down_v.Close()
+	}
+	if c.pipe_down_r != nil {
+		c.pipe_down_r.Close()
 	}
 }

@@ -7,6 +7,15 @@ import (
 	"time"
 )
 
+const (
+	DATA_TYPE_AUDIO_VIDEO              string = "0"
+	DATA_TYPE_VIDEO                    string = "1"
+	DATA_TYPE_TWO_WAY_INTERCOM         string = "2"
+	DATA_TYPE_LISTEN                   string = "3"
+	DATA_TYPE_BROADCAST                string = "4"
+	DATA_TYPE_TRANSPARENT_TRANSMISSION string = "5"
+)
+
 type Conf struct {
 	Addr         string
 	Passwd       string

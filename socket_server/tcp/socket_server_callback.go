@@ -53,12 +53,12 @@ func (ss *SocketServer) OnConnect(c *gotcp.Conn) bool {
 func (ss *SocketServer) OnClose(c *gotcp.Conn) {
 	connection := c.GetExtraData().(*Connection)
 	ss.cm.Del(connection.ID)
-	connection.Close()
 	log.Printf("<DIS> %v\n", c.GetRawConn())
 	err := ss.callback.OnClose(connection)
 	if err != nil {
 		mybase.ErrorCheckPlus(err, connection.ID)
 	}
+	connection.ShutDown()
 	//debug.PrintStack()
 }
 
@@ -95,8 +95,8 @@ func (ss *SocketServer) OnMessage(c *gotcp.Conn, p gotcp.Packet) bool {
 			go func() {
 				connection.once_start_ffmpeg.Do(func() {
 					log.Printf("<INFO> %s %s %s\n", rtp.SIM, rtp.LogicalChannel, connection.ffmpeg_cmd)
-					do_ffmpeg := func() {
-						cmd := exec.Command("bash", "-c", connection.ffmpeg_cmd)
+					do_ffmpeg := func(ffmpeg_cmd string) {
+						cmd := exec.Command("bash", "-c", ffmpeg_cmd)
 						_, err := cmd.Output()
 						if err != nil {
 							log.Printf("<INFO> run ffmpeg error %s %s err msg %s\n", rtp.SIM, rtp.LogicalChannel, err.Error())
@@ -104,7 +104,7 @@ func (ss *SocketServer) OnMessage(c *gotcp.Conn, p gotcp.Packet) bool {
 						connection.ffmpeg_run = false
 					}
 					if !ss.conf.Debug.Debug {
-						do_ffmpeg()
+						do_ffmpeg(connection.ffmpeg_cmd)
 					} else {
 						if connection.SIM == ss.conf.Debug.DestID {
 							if ss.conf.Debug.RecordFileA {
@@ -112,7 +112,7 @@ func (ss *SocketServer) OnMessage(c *gotcp.Conn, p gotcp.Packet) bool {
 								connection.ffmpeg_run = false
 							}
 						} else {
-							do_ffmpeg()
+							do_ffmpeg(connection.ffmpeg_cmd)
 						}
 					}
 				})

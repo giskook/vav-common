@@ -103,7 +103,7 @@ func TestVechicleChan(t *testing.T) {
 
 func TestVehicleStreamFormat(t *testing.T) {
 	init_redis()
-	err := GetInstance().SetVehicleStreamFormat("15226563111", "g726", "h264")
+	err := GetInstance().SetVehicleStreamFormat("15226563111", "g726", "h264", "8000")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -141,4 +141,19 @@ const (
 func TestScriptDo(t *testing.T) {
 	init_redis()
 	t.Log(GetInstance().DoScript(SCRIPT, "test_script", "test", "123"))
+}
+
+func TestPubSub(t *testing.T) {
+	init_redis()
+	f := func(content []byte) error {
+		t.Log(content)
+
+		return nil
+	}
+	go func() {
+		exit := make(chan struct{})
+		GetInstance().Sub("test_pub_sub", exit, f)
+	}()
+	time.Sleep(1000)
+	t.Log(GetInstance().Pub("test_pub_sub", "hello world"))
 }
