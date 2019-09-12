@@ -44,6 +44,7 @@ type Connection struct {
 	ffmpeg_cmd_twis string
 	pipe_down_w     *os.File
 	pipe_down_r     *os.File
+	ffmpeg_args_d   string
 }
 
 func NewConnection(c *gotcp.Conn, conf *Conf) *Connection {
@@ -128,7 +129,7 @@ func (c *Connection) ShutDown() {
 		c.pipe_v.Close()
 	}
 	if c.pipe_down_w != nil {
-		c.pipe_down_v.Close()
+		c.pipe_down_w.Close()
 	}
 	if c.pipe_down_r != nil {
 		c.pipe_down_r.Close()
