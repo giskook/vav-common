@@ -32,3 +32,18 @@ func (r *redis_cli) GetVehicleStreamFormat(id string) (string, string, error) {
 
 	return codecs[0], codecs[1], nil
 }
+
+func (r *redis_cli) DelKey(id string) error {
+	c := r.get_conn()
+	defer c.Close()
+	_, err := c.Do("DEL", id)
+	return err
+}
+
+func (r *redis_cli) ExistKey(id string) (int, error) {
+	c := r.get_conn()
+	defer c.Close()
+	exist, err := c.Do("EXITS", id)
+
+	return exist.(int), err
+}
