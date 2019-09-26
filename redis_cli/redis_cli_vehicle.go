@@ -43,7 +43,7 @@ func (r *redis_cli) DelKey(id string) error {
 func (r *redis_cli) ExistKey(id string) (int, error) {
 	c := r.get_conn()
 	defer c.Close()
-	exist, err := c.Do("EXITS", id)
+	exist, err := c.Do("EXISTS", id)
 
-	return exist.(int), err
+	return int(exist.(int64)), err
 }

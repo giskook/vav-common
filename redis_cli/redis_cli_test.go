@@ -157,3 +157,10 @@ func TestPubSub(t *testing.T) {
 	time.Sleep(1000)
 	t.Log(GetInstance().Pub("test_pub_sub", "hello world"))
 }
+
+func TestExists(t *testing.T) {
+	init_redis()
+
+	t.Log(GetInstance().ExistKey("abc"))
+
+}
