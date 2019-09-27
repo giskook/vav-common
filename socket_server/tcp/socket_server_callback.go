@@ -6,10 +6,10 @@ import (
 	"github.com/giskook/vav-common/base"
 	"github.com/giskook/vav-common/protocol"
 	"log"
-	"os/exec"
-	//"runtime/debug"
 	"os"
-	//"time"
+	"os/exec"
+	"runtime/debug"
+	"time"
 )
 
 func Copy(c *Connection, in, out string) error {
@@ -59,7 +59,7 @@ func (ss *SocketServer) OnClose(c *gotcp.Conn) {
 		mybase.ErrorCheckPlus(err, connection.ID)
 	}
 	connection.ShutDown()
-	//debug.PrintStack()
+	debug.PrintStack()
 }
 
 func (ss *SocketServer) prepare(c *Connection, id, channel string) error {
@@ -75,6 +75,8 @@ func (ss *SocketServer) prepare(c *Connection, id, channel string) error {
 func (ss *SocketServer) OnMessage(c *gotcp.Conn, p gotcp.Packet) bool {
 	connection := c.GetExtraData().(*Connection)
 	connection.recv_buffer.Write(p.Serialize())
+	c.GetRawConn().SetReadDeadline(time.Now().Add(ss.conf.DefaultReadLimit))
+
 	for {
 		protocol_id, protocol_length := protocol.CheckProtocol(connection.recv_buffer)
 		buf := make([]byte, protocol_length)
@@ -90,6 +92,9 @@ func (ss *SocketServer) OnMessage(c *gotcp.Conn, p gotcp.Packet) bool {
 			if err != nil {
 				return false
 			}
+			if int(time.Now().Unix())-connection.TimeStamp > connection.TTL {
+				return false
+			}
 
 			// do ffmpeg
 			go func() {
@@ -102,6 +107,7 @@ func (ss *SocketServer) OnMessage(c *gotcp.Conn, p gotcp.Packet) bool {
 							log.Printf("<INFO> run ffmpeg error %s %s err msg %s\n", rtp.SIM, rtp.LogicalChannel, err.Error())
 						}
 						connection.ffmpeg_run = false
+						ss.callback.OnFfmpegExit(connection)
 					}
 					if !ss.conf.Debug.Debug {
 						do_ffmpeg(connection.ffmpeg_cmd)
@@ -146,12 +152,13 @@ func (ss *SocketServer) OnMessage(c *gotcp.Conn, p gotcp.Packet) bool {
 					connection.frame_audio.SIM = rtp.SIM
 					connection.frame_audio.LogicalChannel = rtp.LogicalChannel
 					connection.frame_audio.Data = append(connection.frame_audio.Data, rtp.Data...)
-					log.Println("first")
 				} else {
 					connection.frame_audio.Data = append(connection.frame_audio.Data, rtp.Data...)
+					log.Println("write aaaa")
 					_, err = connection.pipe_a.Write(connection.frame_audio.Data)
 					if err != nil {
 						log.Printf("<INFO> %s %s write to audio fail err msg :%s \n", rtp.SIM, rtp.LogicalChannel, err.Error())
+						return false
 					}
 					connection.frame_audio.Data = nil
 				}

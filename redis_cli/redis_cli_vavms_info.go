@@ -52,6 +52,7 @@ func (r *redis_cli) GetVavmsInfo(id, channel, access_server_uuid, stream_media s
 		return nil, errors.New(fmt.Sprintf("sim %s channel %s get stream media error %s ", id, channel, err.Error()))
 	}
 
+	match := false
 	srv_single := new(base.StreamMedia)
 	for _, srv := range srvs {
 		err = json.Unmarshal(srv.([]byte), srv_single)
@@ -59,8 +60,12 @@ func (r *redis_cli) GetVavmsInfo(id, channel, access_server_uuid, stream_media s
 			continue
 		}
 		if srv_single.AccessUUID == access_server_uuid {
+			match = true
 			break
 		}
+	}
+	if !match {
+		return nil, errors.New("no such stream media " + access_server_uuid)
 	}
 
 	return &base.VavmsInfo{

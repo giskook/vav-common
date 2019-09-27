@@ -11,6 +11,7 @@ import (
 
 type ConnCallback interface {
 	OnPrepare(*Connection, string, string) error
+	OnFfmpegExit(*Connection) error
 	OnClose(*Connection) error
 }
 
@@ -20,10 +21,12 @@ type Connection struct {
 	exit        chan struct{}
 	conf        *Conf
 
-	ID       string // for vavms sim_logicalchan_play_type
-	SIM      string
-	Channel  string
-	PlayType string
+	ID        string // for vavms sim_logicalchan_play_type
+	SIM       string
+	Channel   string
+	PlayType  string
+	TTL       int
+	TimeStamp int
 
 	pipe_a *os.File
 	pipe_v *os.File
@@ -56,6 +59,7 @@ func NewConnection(c *gotcp.Conn, conf *Conf) *Connection {
 		recv_buffer: bytes.NewBuffer([]byte{}),
 		exit:        make(chan struct{}),
 		ffmpeg_run:  true,
+		TimeStamp:   int(time.Now().Unix()),
 	}
 }
 
@@ -95,7 +99,7 @@ func (c *Connection) OpenPipeV(pipe_v string) error {
 	return nil
 }
 
-func (c *Connection) SetProperty(sim, channel, play_type, cmd, file_path_a, file_path_v, acodec, vcodec string) {
+func (c *Connection) SetProperty(sim, channel, play_type, cmd, file_path_a, file_path_v, acodec, vcodec string, ttl int) {
 	c.SIM = sim
 	c.Channel = channel
 	c.PlayType = play_type
@@ -105,6 +109,7 @@ func (c *Connection) SetProperty(sim, channel, play_type, cmd, file_path_a, file
 	c.file_path_v = file_path_v
 	c.acodec = acodec
 	c.vcodec = vcodec
+	c.TTL = ttl
 }
 
 func (c *Connection) SetFfmepgDown(cmd string) {

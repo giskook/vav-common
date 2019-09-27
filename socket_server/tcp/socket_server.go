@@ -54,7 +54,7 @@ func (ss *SocketServer) Start() error {
 
 	config := &gotcp.Config{
 		PacketSendChanLimit:    20,
-		PacketReceiveChanLimit: 20,
+		PacketReceiveChanLimit: 200,
 	}
 
 	ss.srv = gotcp.NewServer(config, ss, ss)
