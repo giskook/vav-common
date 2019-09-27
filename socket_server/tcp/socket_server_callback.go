@@ -8,7 +8,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"runtime/debug"
+	//"runtime/debug"
 	"time"
 )
 
@@ -59,7 +59,7 @@ func (ss *SocketServer) OnClose(c *gotcp.Conn) {
 		mybase.ErrorCheckPlus(err, connection.ID)
 	}
 	connection.ShutDown()
-	debug.PrintStack()
+	//debug.PrintStack()
 }
 
 func (ss *SocketServer) prepare(c *Connection, id, channel string) error {
