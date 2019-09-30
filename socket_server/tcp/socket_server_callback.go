@@ -2,7 +2,6 @@ package socket_server
 
 import (
 	"github.com/gansidui/gotcp"
-	mybase "github.com/giskook/go/base"
 	"github.com/giskook/vav-common/base"
 	"github.com/giskook/vav-common/protocol"
 	"log"
@@ -54,11 +53,8 @@ func (ss *SocketServer) OnClose(c *gotcp.Conn) {
 	connection := c.GetExtraData().(*Connection)
 	ss.cm.Del(connection.ID)
 	log.Printf("<DIS> %v\n", c.GetRawConn())
-	err := ss.callback.OnClose(connection)
-	if err != nil {
-		mybase.ErrorCheckPlus(err, connection.ID)
-	}
 	connection.ShutDown()
+	ss.callback.OnClose(connection)
 	//debug.PrintStack()
 }
 
@@ -126,7 +122,7 @@ func (ss *SocketServer) OnMessage(c *gotcp.Conn, p gotcp.Packet) bool {
 			if !connection.ffmpeg_run {
 				return false
 			}
-			if rtp.Type <= base.RTP_TYPE_VIDEOB {
+			if rtp.Type <= base.RTP_TYPE_VIDEOB && (connection.avtype&1 != 0) { // 1,3 means video
 				//_, err = connection.pipe_v.Write(rtp.Data)
 				//if err != nil {
 				//	log.Printf("<INFO> %s %s write to video fail err msg :%s \n", rtp.SIM, rtp.LogicalChannel, err.Error())
@@ -146,7 +142,7 @@ func (ss *SocketServer) OnMessage(c *gotcp.Conn, p gotcp.Packet) bool {
 					}
 					connection.frame_vedio.Data = nil
 				}
-			} else if rtp.Type == base.RTP_TYPE_AUDIO {
+			} else if rtp.Type == base.RTP_TYPE_AUDIO && connection.avtype&2 != 0 { // 2 means audio
 				if rtp.Segment == base.RTP_SEGMENT_FIRST ||
 					rtp.Segment == base.RTP_SEGMENT_MID {
 					connection.frame_audio.SIM = rtp.SIM

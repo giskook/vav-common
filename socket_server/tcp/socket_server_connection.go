@@ -42,6 +42,7 @@ type Connection struct {
 	file_path_v       string
 	acodec            string
 	vcodec            string
+	avtype            int // 1 for v 2 for a 3 for av
 
 	// twis
 	ffmpeg_cmd_twis string
@@ -99,7 +100,7 @@ func (c *Connection) OpenPipeV(pipe_v string) error {
 	return nil
 }
 
-func (c *Connection) SetProperty(sim, channel, play_type, cmd, file_path_a, file_path_v, acodec, vcodec string, ttl int) {
+func (c *Connection) SetProperty(sim, channel, play_type, cmd, file_path_a, file_path_v, acodec, vcodec string, ttl, avtype int) {
 	c.SIM = sim
 	c.Channel = channel
 	c.PlayType = play_type
@@ -110,6 +111,7 @@ func (c *Connection) SetProperty(sim, channel, play_type, cmd, file_path_a, file
 	c.acodec = acodec
 	c.vcodec = vcodec
 	c.TTL = ttl
+	c.avtype = avtype
 }
 
 func (c *Connection) SetFfmepgDown(cmd string) {
@@ -128,9 +130,11 @@ func (c *Connection) ShutDown() {
 	close(c.exit)
 	c.recv_buffer.Reset()
 	if c.pipe_a != nil {
+		time.Sleep(1 * time.Second) // wait the ffmpeg to start.
 		c.pipe_a.Close()
 	}
 	if c.pipe_v != nil {
+		time.Sleep(1 * time.Second) // wait the ffmpeg to start.
 		c.pipe_v.Close()
 	}
 	if c.pipe_down_w != nil {
