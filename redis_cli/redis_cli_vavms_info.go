@@ -75,7 +75,6 @@ func (r *redis_cli) GetVavmsInfo(id, channel, access_server_uuid, stream_media s
 		Status:       status,
 		DataType:     data_type,
 		TTL:          ttl,
-		DomainInner:  srv_single.DomainInner,
-		DomainOuter:  srv_single.DomainOuter,
+		StreamMedia:  srv_single,
 	}, nil
 }

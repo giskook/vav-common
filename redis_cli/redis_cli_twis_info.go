@@ -55,7 +55,6 @@ func (r *redis_cli) GetTwisInfo(id, status_key, access_server_uuid, stream_media
 		SamplingRate: avs[2],
 		DataType:     status,
 		TTL:          ttl,
-		DomainInner:  srv_single.DomainInner,
-		DomainOuter:  srv_single.DomainOuter,
+		StreamMedia:  srv_single,
 	}, nil
 }

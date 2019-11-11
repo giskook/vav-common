@@ -47,3 +47,11 @@ func (r *redis_cli) ExistKey(id string) (int, error) {
 
 	return int(exist.(int64)), err
 }
+
+func (r *redis_cli) AddKey(key, value string) error {
+	c := r.get_conn()
+	defer c.Close()
+	_, err := c.Do("SET", key, value)
+
+	return err
+}
