@@ -46,7 +46,7 @@ func (r *redis_cli) PipeHGet(key string, subkeys []string) ([]string, error) {
 	result := make([]string, 0)
 	var v string
 	var err error
-	for i := 0; i < index; i++ {
+	for i := 0; i < index+1; i++ {
 		v, err = redis.String(c.Receive())
 		if err != nil {
 			return nil, err
