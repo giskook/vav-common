@@ -46,6 +46,30 @@ func (r *redis_cli) DoScript(script string, args ...string) (int, error) {
 	case 11:
 		return redis.Int(s.Do(c, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10]))
 		break
+	case 12:
+		return redis.Int(s.Do(c, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11]))
+		break
+	case 13:
+		return redis.Int(s.Do(c, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12]))
+		break
+	case 14:
+		return redis.Int(s.Do(c, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13]))
+		break
+	case 15:
+		return redis.Int(s.Do(c, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14]))
+		break
+	case 16:
+		return redis.Int(s.Do(c, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15]))
+		break
+	case 17:
+		return redis.Int(s.Do(c, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16]))
+		break
+	case 18:
+		return redis.Int(s.Do(c, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17]))
+		break
+	case 19:
+		return redis.Int(s.Do(c, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18]))
+		break
 	}
 
 	return 0, errors.New("over the max args")

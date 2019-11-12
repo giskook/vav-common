@@ -49,6 +49,8 @@ type Connection struct {
 	pipe_down_w     *os.File
 	pipe_down_r     *os.File
 	ffmpeg_args_d   string
+	// vavms
+	ffmpeg_name string
 }
 
 func NewConnection(c *gotcp.Conn, conf *Conf) *Connection {
@@ -100,7 +102,7 @@ func (c *Connection) OpenPipeV(pipe_v string) error {
 	return nil
 }
 
-func (c *Connection) SetProperty(sim, channel, play_type, cmd, file_path_a, file_path_v, acodec, vcodec string, ttl, avtype int) {
+func (c *Connection) SetProperty(sim, channel, play_type, cmd, file_path_a, file_path_v, acodec, vcodec, ffmpeg_name string, ttl, avtype int) {
 	c.SIM = sim
 	c.Channel = channel
 	c.PlayType = play_type
@@ -110,6 +112,7 @@ func (c *Connection) SetProperty(sim, channel, play_type, cmd, file_path_a, file
 	c.file_path_v = file_path_v
 	c.acodec = acodec
 	c.vcodec = vcodec
+	c.ffmpeg_name = ffmpeg_name
 	c.TTL = ttl
 	c.avtype = avtype
 }

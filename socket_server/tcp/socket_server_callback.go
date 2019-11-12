@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	//"runtime/debug"
+	"runtime/debug"
 	"time"
 )
 
@@ -55,7 +55,7 @@ func (ss *SocketServer) OnClose(c *gotcp.Conn) {
 	log.Printf("<DIS> %v\n", c.GetRawConn())
 	connection.ShutDown()
 	ss.callback.OnClose(connection)
-	//debug.PrintStack()
+	debug.PrintStack()
 }
 
 func (ss *SocketServer) prepare(c *Connection, id, channel string) error {
@@ -97,8 +97,13 @@ func (ss *SocketServer) OnMessage(c *gotcp.Conn, p gotcp.Packet) bool {
 				connection.once_start_ffmpeg.Do(func() {
 					log.Printf("<INFO> %s %s %s\n", rtp.SIM, rtp.LogicalChannel, connection.ffmpeg_cmd)
 					do_ffmpeg := func(ffmpeg_cmd string) {
+						cmd_quit := exec.Command("pkill", connection.ffmpeg_name)
+						_, err := cmd_quit.Output()
+						if err != nil {
+							log.Printf("<INFO> run quit ffmpeg error %s %s err msg %s\n", rtp.SIM, rtp.LogicalChannel, err.Error())
+						}
 						cmd := exec.Command("bash", "-c", ffmpeg_cmd)
-						_, err := cmd.Output()
+						_, err = cmd.Output()
 						if err != nil {
 							log.Printf("<INFO> run ffmpeg error %s %s err msg %s\n", rtp.SIM, rtp.LogicalChannel, err.Error())
 						}
@@ -150,7 +155,6 @@ func (ss *SocketServer) OnMessage(c *gotcp.Conn, p gotcp.Packet) bool {
 					connection.frame_audio.Data = append(connection.frame_audio.Data, rtp.Data...)
 				} else {
 					connection.frame_audio.Data = append(connection.frame_audio.Data, rtp.Data...)
-					log.Println("write aaaa")
 					_, err = connection.pipe_a.Write(connection.frame_audio.Data)
 					if err != nil {
 						log.Printf("<INFO> %s %s write to audio fail err msg :%s \n", rtp.SIM, rtp.LogicalChannel, err.Error())
