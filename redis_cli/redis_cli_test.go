@@ -40,24 +40,16 @@ func TestSetStreamMedia(t *testing.T) {
 	init_redis()
 	GetInstance().SetStreamMedia("vavms_stream_media", []*base.StreamMedia{
 		&base.StreamMedia{
-			AccessUUID:  "vavms1",
-			DomainInner: "rtmp://127.0.0.1:8080/myapp",
-			DomainOuter: "rtmp://192.168.2.122:8080/myapp",
+			AccessUUID: "vavms1",
 		},
 		&base.StreamMedia{
-			AccessUUID:  "vavms2",
-			DomainInner: "rtmp://127.0.0.1:8080/myapp",
-			DomainOuter: "rtmp://192.168.2.121:8080/myapp",
+			AccessUUID: "vavms2",
 		},
 		&base.StreamMedia{
-			AccessUUID:  "vavms3",
-			DomainInner: "rtmp://127.0.0.1:8080/myapp",
-			DomainOuter: "rtmp://192.168.2.123:8080/myapp",
+			AccessUUID: "vavms3",
 		},
 		&base.StreamMedia{
-			AccessUUID:  "vavms4",
-			DomainInner: "rtmp://127.0.0.1:8080/myapp",
-			DomainOuter: "rtmp://192.168.2.124:8080/myapp",
+			AccessUUID: "vavms4",
 		},
 	})
 
@@ -80,9 +72,7 @@ func TestSetStreamMedia(t *testing.T) {
 		t.Log(*v)
 	}
 	stream_media := &base.StreamMedia{
-		AccessUUID:  "vavms4",
-		DomainInner: "rtmp://127.0.0.1:8080/myapp",
-		DomainOuter: "rtmp://192.168.2.124:8080/myapp",
+		AccessUUID: "vavms4",
 	}
 	result = GetInstance().UpdateStreamMedia("vavms_stream_media", "1", stream_media)
 	t.Log(result)
@@ -163,4 +153,10 @@ func TestExists(t *testing.T) {
 
 	t.Log(GetInstance().ExistKey("abc"))
 
+}
+
+func TestPipeHGet(t *testing.T) {
+	init_redis()
+	_, err := GetInstance().PipeHGet("abc", []string{"aaa", "bbb"})
+	t.Log(err)
 }

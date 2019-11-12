@@ -14,6 +14,16 @@ const (
 	DATA_TYPE_LISTEN                   string = "3"
 	DATA_TYPE_BROADCAST                string = "4"
 	DATA_TYPE_TRANSPARENT_TRANSMISSION string = "5"
+
+	HTTP_IP_OUTTER   string = "http_ip_outter"
+	HTTP_PORT_OUTTER string = "http_port_outter"
+	HTTP_LOCATION    string = "http_location"
+	RTMP_INNER_PORT  string = "rtmp_port_outter"
+	RTMP_APPLICATION string = "rtmp_application"
+
+	STREAM_PRIORITY_KEY string = "priority"
+
+	VAVMS_TOKEN = "vavms_token"
 )
 
 type Conf struct {
