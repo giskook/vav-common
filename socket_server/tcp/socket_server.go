@@ -21,6 +21,7 @@ type DebugCnf struct {
 type Conf struct {
 	TcpAddr          string
 	ServerType       string
+	FFmpegKiller     string
 	DefaultReadLimit time.Duration
 	Debug            *DebugCnf
 }

@@ -1,6 +1,7 @@
 package socket_server
 
 import (
+	"fmt"
 	"github.com/gansidui/gotcp"
 	"github.com/giskook/vav-common/base"
 	"github.com/giskook/vav-common/protocol"
@@ -97,11 +98,9 @@ func (ss *SocketServer) OnMessage(c *gotcp.Conn, p gotcp.Packet) bool {
 				connection.once_start_ffmpeg.Do(func() {
 					log.Printf("<INFO> %s %s %s\n", rtp.SIM, rtp.LogicalChannel, connection.ffmpeg_cmd)
 					do_ffmpeg := func(ffmpeg_cmd string) {
-						cmd_quit := exec.Command("pkill", connection.ffmpeg_name)
-						_, err := cmd_quit.Output()
-						if err != nil {
-							log.Printf("<INFO> run quit ffmpeg error %s %s err msg %s\n", rtp.SIM, rtp.LogicalChannel, err.Error())
-						}
+						ffmpeg_killer := fmt.Sprintf(connection.conf.FFmpegKiller, connection.ffmpeg_name)
+						cmd_quit := exec.Command("bash", "-c", ffmpeg_killer)
+						cmd_quit.Output()
 						cmd := exec.Command("bash", "-c", ffmpeg_cmd)
 						_, err = cmd.Output()
 						if err != nil {
