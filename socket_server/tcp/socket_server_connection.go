@@ -9,6 +9,12 @@ import (
 	"time"
 )
 
+const (
+	VIDEO_TYPE int = 1
+	AUDIO_TYPE int = 2
+	AV_TYPE    int = 3
+)
+
 type ConnCallback interface {
 	OnPrepare(*Connection, string, string) error
 	OnFfmpegExit(*Connection) error
@@ -37,56 +43,43 @@ type Connection struct {
 	once_prepare      sync.Once
 	once_start_ffmpeg sync.Once
 	ffmpeg_run        bool
-	ffmpeg_cmd        string
+	ffmpeg_cmds       []string
 	file_path_a       string
 	file_path_v       string
 	acodec            string
 	vcodec            string
 	avtype            int // 1 for v 2 for a 3 for av
 
-	// twis
-	ffmpeg_cmd_twis string
-	pipe_down_w     *os.File
-	pipe_down_r     *os.File
-	ffmpeg_args_d   string
-	// vavms
-	ffmpeg_name string
+	ffmpeg_name     string
+	log_audio       bool
+	log_video       bool
+	baseline_time   int64
+	elapsed_time    int64
+	video_last_time int64
+	audio_last_time int64
 }
 
 func NewConnection(c *gotcp.Conn, conf *Conf) *Connection {
 	tcp_c := c.GetRawConn()
 	tcp_c.SetReadDeadline(time.Now().Add(conf.DefaultReadLimit))
 	return &Connection{
-		conf:        conf,
-		c:           c,
-		recv_buffer: bytes.NewBuffer([]byte{}),
-		exit:        make(chan struct{}),
-		ffmpeg_run:  true,
-		TimeStamp:   int(time.Now().Unix()),
+		conf:          conf,
+		c:             c,
+		recv_buffer:   bytes.NewBuffer([]byte{}),
+		exit:          make(chan struct{}),
+		ffmpeg_run:    true,
+		TimeStamp:     int(time.Now().Unix()),
+		log_audio:     false,
+		log_video:     false,
+		baseline_time: time.Now().Unix(),
+		elapsed_time:  time.Now().Unix(),
+		avtype:        0,
 	}
 }
 
 func (c *Connection) OpenPipeA(pipe_a string) error {
 	var err error
 	c.pipe_a, err = os.OpenFile(pipe_a, os.O_RDWR, 0600)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (c *Connection) OpenPipeW(pipe_w string) error {
-	var err error
-	c.pipe_down_w, err = os.OpenFile(pipe_w, os.O_RDWR, 0600)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (c *Connection) OpenPipeR(pipe_r string) error {
-	var err error
-	c.pipe_down_r, err = os.OpenFile(pipe_r, os.O_RDWR, 0600)
 	if err != nil {
 		return err
 	}
@@ -102,23 +95,18 @@ func (c *Connection) OpenPipeV(pipe_v string) error {
 	return nil
 }
 
-func (c *Connection) SetProperty(sim, channel, play_type, cmd, file_path_a, file_path_v, acodec, vcodec, ffmpeg_name string, ttl, avtype int) {
+func (c *Connection) SetProperty(sim, channel, play_type, file_path_a, file_path_v, acodec, vcodec, ffmpeg_name string, cmds []string, ttl int) {
 	c.SIM = sim
 	c.Channel = channel
 	c.PlayType = play_type
 	c.ID = sim + "_" + channel + "_" + play_type
-	c.ffmpeg_cmd = cmd
+	c.ffmpeg_cmds = cmds
 	c.file_path_a = file_path_a
 	c.file_path_v = file_path_v
 	c.acodec = acodec
 	c.vcodec = vcodec
 	c.ffmpeg_name = ffmpeg_name
 	c.TTL = ttl
-	c.avtype = avtype
-}
-
-func (c *Connection) SetFfmepgDown(cmd string) {
-	c.ffmpeg_args_d = cmd
 }
 
 func (c *Connection) SetReadDeadline(seconds int) {
@@ -139,11 +127,5 @@ func (c *Connection) ShutDown() {
 	if c.pipe_v != nil {
 		time.Sleep(1 * time.Second) // wait the ffmpeg to start.
 		c.pipe_v.Close()
-	}
-	if c.pipe_down_w != nil {
-		c.pipe_down_w.Close()
-	}
-	if c.pipe_down_r != nil {
-		c.pipe_down_r.Close()
 	}
 }

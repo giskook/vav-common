@@ -2,6 +2,7 @@ package base
 
 import (
 	"bufio"
+	"golang.org/x/sys/unix"
 	"os"
 	"path"
 	"syscall"
@@ -16,7 +17,15 @@ func Mkfifo(named_pipe string) error {
 		err := syscall.Mkfifo(named_pipe, 0600)
 		if err == syscall.EEXIST {
 			return nil
+		} else if err != nil {
+			return err
 		}
+		file, err := os.OpenFile(named_pipe, os.O_RDWR, 0600)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+		_, err = unix.FcntlInt(file.Fd(), unix.F_SETPIPE_SZ, 262144)
 		return err
 	}
 	err := fn(named_pipe)
